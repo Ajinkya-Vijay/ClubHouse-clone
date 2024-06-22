@@ -1,25 +1,60 @@
 import * as yup from "yup";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { peoples_images } from "../../images";
+import Cookies from 'universal-cookie'
 
 interface FormValues {
-    username : string;
+    userName : string;
     name : string;
 }
 
 export const SigninPage = () =>{
+
+    const cookies = new Cookies();
     const schema = yup.object().shape({
-        username : yup.string().required("Username is required").matches(/^[a-zA-Z0-9_.@$]+$/, "Invalid Username"),
+        userName : yup.string().required("userName is required").matches(/^[a-zA-Z0-9_.@$]+$/, "Invalid userName"),
         name :  yup.string().required("Name is required"),
     })
 
     const {register, handleSubmit, formState : {errors},} =useForm<FormValues>({resolver: yupResolver(schema)})
 
-    const onSubmit: SubmitHandler<FormValues>=(data, event)=>{
+    const onSubmit: SubmitHandler<FormValues>= async(data, event)=>{
         event?.preventDefault()
-        const {username, name} = data
+        const {userName, name} = data
 
-        console.log(username,name)
+        const response = await fetch("http://localhost:3001/auth/createUser",{
+            method: "POST",
+            headers:{
+                "Content-type" : "application/json"
+            },
+            body:JSON.stringify({
+                userName,
+                name,
+                image: peoples_images[Math.floor(Math.random() * peoples_images.length)]
+            })
+        })
+
+        if(!response.ok){
+            alert("some error occured while signin ");
+            return;
+        }
+        const responseData = await response.json()
+        console.log(responseData)
+
+        const expires = new Date ()
+        expires.setDate(expires.getDate() +1)
+        cookies.set("token",responseData.token,{
+            expires
+        })
+
+        cookies.set("username",responseData.userName,{
+            expires
+        })
+
+        cookies.set("name",responseData.name,{
+            expires
+        })
     }
     return(
         <div className="sign-in">
@@ -28,9 +63,9 @@ export const SigninPage = () =>{
             </h1>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div>
-                    <label>Username:</label>
-                    <input type="text" {...register("username")}/>
-                    {errors.username && <p style={{color:"red"}}>{errors.username.message}</p>}
+                    <label>userName:</label>
+                    <input type="text" {...register("userName")}/>
+                    {errors.userName && <p style={{color:"red"}}>{errors.userName.message}</p>}
                 </div>
                 <div>
                     <label>Name:</label>
