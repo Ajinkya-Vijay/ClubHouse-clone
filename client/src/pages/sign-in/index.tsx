@@ -3,6 +3,9 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { peoples_images } from "../../images";
 import Cookies from 'universal-cookie'
+import { StreamVideoClient, User } from "@stream-io/video-react-sdk";
+import { useUser } from "../user-context";
+import { useNavigate } from "react-router-dom";
 
 interface FormValues {
     userName : string;
@@ -12,6 +15,10 @@ interface FormValues {
 export const SigninPage = () =>{
 
     const cookies = new Cookies();
+    const {setClient, setUser} = useUser();
+
+    const navigate = useNavigate()
+
     const schema = yup.object().shape({
         userName : yup.string().required("userName is required").matches(/^[a-zA-Z0-9_.@$]+$/, "Invalid userName"),
         name :  yup.string().required("Name is required"),
@@ -42,19 +49,36 @@ export const SigninPage = () =>{
         const responseData = await response.json()
         console.log(responseData)
 
+        const user : User ={
+            id: userName,
+            name,
+        }
+
+        const myClient = new StreamVideoClient({
+            apiKey : "u3zmx3c2dt2q",
+            user,
+            token : responseData.token
+
+        })
+
+        setClient(myClient);
+        setUser({userName, name});
+
         const expires = new Date ()
         expires.setDate(expires.getDate() +1)
         cookies.set("token",responseData.token,{
             expires
         })
 
-        cookies.set("username",responseData.userName,{
+        cookies.set("userName",responseData.userName,{
             expires
         })
 
         cookies.set("name",responseData.name,{
             expires
-        })
+        });
+
+        navigate('/')
     }
     return(
         <div className="sign-in">
