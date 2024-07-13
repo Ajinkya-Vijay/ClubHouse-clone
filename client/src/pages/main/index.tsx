@@ -1,7 +1,9 @@
 import { StreamVideo } from "@stream-io/video-react-sdk"
 import { useUser } from "../user-context"
-import { Navigate } from "react-router-dom"
+import { Navigate, useNavigate } from "react-router-dom"
 import { useState } from "react";
+import CryptoJS from 'crypto-js'
+import { string } from "yup";
 
 interface NewRoom{
     name : string,
@@ -10,8 +12,15 @@ interface NewRoom{
 
 export const MainPage = () =>{
 
-    const {client, user} = useUser();
+    const {client, user, setCall} = useUser();
     const [newRoom, setNewRoom] = useState<NewRoom>({name : '', description : ''});
+
+    const navigate = useNavigate()
+
+    const hashRommName = (roomName : string):string =>{
+        const hash = CryptoJS.SHA256(roomName).toString(CryptoJS.enc.Base64)
+        return hash.replace(/[^a-zA-Z0-9_-]/g, "");
+    }
 
     if(!client) return <Navigate to='/sign-in'/>
 
@@ -19,7 +28,7 @@ export const MainPage = () =>{
         const {name, description} = newRoom;
         if(!client || !user || !name || !description) return;
 
-        const call = client.call("audio_room",name)
+        const call = client.call("audio_room",hashRommName(name))
         await call.join({
             create : true,
             data:{
@@ -30,7 +39,9 @@ export const MainPage = () =>{
                 }
             }
         })
-    }
+        setCall(call)
+        navigate('/room')
+    };
 
     return (
         <StreamVideo client={client}>

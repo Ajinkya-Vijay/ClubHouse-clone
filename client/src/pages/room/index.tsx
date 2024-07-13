@@ -1,3 +1,17 @@
+import { useCallStateHooks } from "@stream-io/video-react-sdk"
+
 export const RoomPage = () =>{
-    return <div>Room Page</div>
+    const {useCallCustomData, useParticipants, useCallCreatedBy} = useCallStateHooks()
+    
+    const custom = useCallCustomData();
+    const participants = useParticipants();
+    const createdBy = useCallCreatedBy();
+
+    return( 
+    <div className="room">
+                <h2 className="title">{custom?.title ?? "TITLE"}</h2>
+                <h3 className="description">{custom?.description ?? "description"}</h3>
+                <p className="participant-count">{participants?.length} participants</p>
+            </div>
+    )
 }

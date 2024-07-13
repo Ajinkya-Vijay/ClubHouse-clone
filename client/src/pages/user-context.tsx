@@ -1,4 +1,4 @@
-import { StreamVideoClient } from "@stream-io/video-react-sdk"
+import { StreamVideoClient, Call } from "@stream-io/video-react-sdk"
 import { createContext, ReactNode, useContext, useState } from "react";
 
     interface User{
@@ -11,6 +11,8 @@ import { createContext, ReactNode, useContext, useState } from "react";
         setUser : (user: User | null) => void,
         client : StreamVideoClient | undefined;
         setClient : (client: StreamVideoClient | undefined) => void;
+        call : Call | undefined;
+        setCall : (call : Call | undefined) => void
     }
 
     const UserContext = createContext<UserContextProps | undefined>(undefined);
@@ -21,9 +23,10 @@ import { createContext, ReactNode, useContext, useState } from "react";
 
     export const UserProvider = (props : UserProviderProps) =>{
         const [user, setUser] =useState<User | null>(null);
+        const[call, setCall] = useState<Call>()
         const [client, setClient] =useState<StreamVideoClient>()
 
-        return <UserContext.Provider value={{user, setUser,client, setClient}}>{props.children}</UserContext.Provider>
+        return <UserContext.Provider value={{user, setUser,client, setClient, call, setCall}}>{props.children}</UserContext.Provider>
     }
 
     export const useUser =()=>{
