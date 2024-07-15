@@ -63,7 +63,6 @@ export const SigninPage = () =>{
 
         setClient(myClient);
         setUser({userName, name});
-
         const expires = new Date ()
         expires.setDate(expires.getDate() +1)
         cookies.set("token",responseData.token,{
